@@ -8,7 +8,7 @@ import {
 function CheckboxCompo(props: any) {
   return (
     <Stack>
-      <FormGroup>
+      <FormGroup row>
         {props.item?.map((item: string) => (
           <FormControlLabel control={<Checkbox />} label={item} />
         ))}

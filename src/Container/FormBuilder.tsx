@@ -16,34 +16,26 @@ import {
   Select,
   MenuItem,
   SelectChangeEvent,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  FormLabel,
-  RadioGroup,
-  Radio,
-  Box,
+  Alert,
 } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import { Question } from '../../types/interfaces';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import { DesktopTimePicker } from '@mui/x-date-pickers/DesktopTimePicker';
-import Slider from '@mui/material/Slider';
 import Dropdown from '../Components/Dropdown';
 import SingleLineTextfield from '../Components/SingleLineTextField';
 import MultiLineTextfield from '../Components/MultiLineTextfield';
 import CheckboxCompo from "../Components/Checkbox"
 import RadioButton from '../Components/RadioButton';
 import DatePicker from '../Components/DatePicker';
+import TimePickerCompo from '../Components/TimePicker';
+import NumberRangePicker from '../Components/NumberRangePicker';
+import ImagePickerCompo from '../Components/ImagePicker';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 function FormBuilder() {
   const [que, setQue] = useState<string>('');
   const [ansType, setAnsType] = useState<string>('');
   const [isQueSubmit, setIsQueSubmit] = useState<boolean>(false);
-  const [quenArry, setQueArry] = useState<string[]>([]);
   const [formField, setFormField] = useState<Question[]>([]);
   const [option, setOption] = useState<string | undefined>();
   const [checkBoxOption, setCheckBoxOption] = useState<string | undefined>();
@@ -52,23 +44,22 @@ function FormBuilder() {
   const [isOptionEnable, setIsOptionEnable] = useState<boolean>(false);
   const [radioOptionArry, setRadioOptionArry] = useState<[]>([]);
   const [radioBtnOption, setRadioBtnOption] = useState<string | undefined>();
-  const [radioOptionVal, setRadioOptionVal] = useState<string | undefined>();
-  const [dateValue, setDateValue] = React.useState<Date | null>(
-    new Date('2014-08-18T21:11:54'),
-  );;
-  const [timeValue, setTimeValue] = React.useState<Date | null>(
-    new Date('2018-01-01T00:00:00.000Z'),
-  );
+  const [isRangeEnable, setIsRangeEnable] = useState<boolean>(false);
+  const [minRange, setMinRange] = useState<string>("");
+  const [maxRange, setMaxRange] = useState<string>("")
+  const [isQueShowErr, setIsqueShowErr] = useState(false)
+  const [isAnsErr, setIsAnsErr] = useState(false)
+  const [isOptionAdd, setIsOptionAdd] = useState(false)
 
   const handleChange = (event: SelectChangeEvent<string>) => {
-    console.log('Age', event.target.value);
-    // let ansType = event.target.value;
     if (event.target.value == 'Dropdown') {
       setIsOptionEnable(true);
     } else if (event.target.value == 'Checkbox') {
       setIsOptionEnable(true);
     } else if (event.target.value == 'Radio Button') {
       setIsOptionEnable(true);
+    } else if (event.target.value == 'Number Range Picker') {
+      setIsRangeEnable(true);
     } else {
       setIsOptionEnable(false);
     }
@@ -77,14 +68,14 @@ function FormBuilder() {
   const formSubmitHandler = () => {
     console.log("form submit handler");
   }
-  const dateChangeHandler = (newValue: Date | null) => {
-    setDateValue(newValue)
+  const addOptionToListHandler = () => {
+    console.log("addNewOptionHandler");
+    setIsOptionAdd(true)
   }
   const submitHandler = () => {
     let arry: Question[] = [...formField];
     let arryNew: [] = [];
     if (ansType == 'Dropdown') {
-      console.log('ANSWER TYPE', ansType);
       arryNew = optionArry;
     } else if (ansType == 'Checkbox') {
       arryNew = checkBoxOptionArry;
@@ -93,8 +84,19 @@ function FormBuilder() {
     } else {
       arryNew = [];
     }
-    arry.push({ question: que, answerType: ansType, options: arryNew });
-    console.log('ARRAY', arry);
+    let numArry:string[] = []
+    if (ansType == "Number Range Picker") {
+      numArry = [minRange, maxRange]
+    }
+    if(que === "") {
+      setIsqueShowErr(true)
+    } if(ansType === "") {
+      setIsAnsErr(true)
+    } else {
+      setIsqueShowErr(false)
+      setIsAnsErr(false)
+      arry.push({ question: que, answerType: ansType, options: arryNew, numsArray: numArry });
+    }
     setQue('');
     setAnsType('');
     setFormField(arry);
@@ -103,8 +105,17 @@ function FormBuilder() {
     setOptionArry([]);
     setRadioOptionArry([]);
     setCheckBoxOptionArry([]);
+    setMaxRange("")
+    setMinRange("")
   };
-  
+  const handleMinRange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    console.log("MIN RANGE", e.target.value);
+    setMinRange(e.target.value)
+  }
+  const handleMaxRange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    console.log("MAX RANGE", e.target.value);
+    setMaxRange(e.target.value)
+  }
   const onChnageHandler = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -177,11 +188,22 @@ function FormBuilder() {
     <Stack>
       <Grid container spacing={5} columns={12} style={{ padding: 24 }}>
         <Grid item xs={6} >
-          <Stack mr={7}>
+          <Container >
             <Typography variant="h4" component="h4">
               Generate Your Question Here
             </Typography>
             <Stack>
+              {isQueShowErr ? 
+              <TextField
+                error
+                id="standard-basic"
+                label="Error"
+                variant="standard"
+                margin="normal"
+                onChange={(e) => onChnageHandler(e)}
+                value={que}
+                helperText="Please Enter a Question"
+              /> : 
               <TextField
                 id="standard-basic"
                 label="Question"
@@ -190,6 +212,8 @@ function FormBuilder() {
                 onChange={(e) => onChnageHandler(e)}
                 value={que}
               />
+              }
+              
             </Stack>
             
             <Stack style={{ marginTop: 28 }}>
@@ -204,6 +228,7 @@ function FormBuilder() {
                 id="demo-simple-select"
                 value={ansType}
                 label="Question Type"
+                // helperText="Please Enter a Question"
                 onChange={(e) => handleChange(e)}
               >
                 <MenuItem value={'Single Line Textfield'}>
@@ -221,17 +246,55 @@ function FormBuilder() {
                 <MenuItem value={'Image Picker'}>Image Picker</MenuItem>
               </Select>
             </FormControl>
-
+            {isAnsErr ? <Alert severity="error">Please Select the Answer Type!</Alert> : null}
             {ansType && isOptionEnable ? (
-              <Container>
-                <Grid container spacing={2} columns={12}>
+              <Container style={{marginTop: "10px"}}>
+                <Typography variant="h6" component="h6">
+                  Add Option
+                </Typography>
+                {isOptionAdd ? (
+                  <Grid container spacing={2} columns={12} alignItems="center">
+                    <Grid item xs={10}>
+                      <Stack>
+                        <TextField
+                          id="standard-basic"
+                          label="Option"
+                          variant="outlined"
+                          margin="normal"
+                          onChange={(e) => onChnageHandler(e)}
+                          value={option}
+                        />
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Stack direction="row" alignItems="center" justifyContent="center" style={{display: "flex"}}>
+                        <DeleteForeverIcon />
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                  // <Stack direction="row" alignItems="center">
+                  //   <TextField
+                  //   id="standard-basic"
+                  //   label="Question"
+                  //   variant="outlined"
+                  //   margin="normal"
+                  //   onChange={(e) => onChnageHandler(e)}
+                  //   value={que}
+                  // />
+                  // <DeleteForeverIcon />
+                  // </Stack>
+                ) : null}
+                <Stack direction="row" justifyContent="center">
+                  <AddCircleIcon color='primary' onClick={() => addOptionToListHandler()}/>
+                </Stack>
+                {/* <Grid container spacing={2} columns={12}>
                   <Grid item xs={8}>
                     <Stack>
                       <TextField
                         id="standard-basic"
                         label="Enter Option"
                         onChange={(e) => onOptionChange(e, ansType)}
-                        variant="standard"
+                        variant="outlined"
                         margin="normal"
                       />
                     </Stack>
@@ -258,18 +321,48 @@ function FormBuilder() {
                         <Grid item xs={2}><Typography style={{backgroundColor: "#ededed", textAlign: "center", borderRadius: "7px", padding: "3px"}}>{item}</Typography></Grid>
                       ))
                     : null}
-                </Grid>
+                </Grid> */}
               </Container>
+            ) : null}
+            {ansType == "Number Range Picker" && isRangeEnable ? (
+              <Grid container spacing={2} columns={12} mt={2}>
+                <Grid item xs={6}>
+                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                    <Typography>Min Range</Typography>
+                    <TextField
+                      id="filled-basic"
+                      label="Min Range"
+                      variant="filled"
+                      margin="normal"
+                      value={minRange}
+                      onChange={(e) => handleMinRange(e)}
+                    />
+                  </Stack>
+                </Grid>
+                <Grid item xs={6}>
+                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                 <Typography>Max Range</Typography>
+                 <TextField
+                    id="filled-basic"
+                    label="Max Range"
+                    variant="filled"
+                    margin="normal"
+                    value={maxRange}
+                    onChange={(e) => handleMaxRange(e)}
+                  />
+                </Stack>
+                </Grid>
+              </Grid>
             ) : null}
          
             <Button
               variant="contained"
-              style={{ marginTop: 20 }}
+              style={{ marginTop: 30 }}
               onClick={() => submitHandler()}
             >
               Preview
             </Button>
-          </Stack>
+          </Container>
         </Grid>
         <Divider orientation="vertical" flexItem/>
         <Grid
@@ -281,6 +374,7 @@ function FormBuilder() {
             Form Preview
           </Typography>
           {isQueSubmit && formField ? (
+            <Container>
             <FormControl style={{ marginTop: 20 }} fullWidth>
               {formField?.map((item) => (
                 <Stack mt={2}>
@@ -297,53 +391,34 @@ function FormBuilder() {
                      <RadioButton item={item.options} />
                   ) : item.answerType === 'Date Picker' ? (
                     <Stack mt={2}>
-                      <LocalizationProvider dateAdapter={ AdapterMoment } >
-                        <DesktopDatePicker
-                          label="For desktop"
-                          value={dateValue}
-                          onChange={(newValue) => {
-                            setDateValue(newValue);
-                          }}
-                          renderInput={(params) => <TextField {...params} />}
-                        />
-                      </LocalizationProvider>
+                      <DatePicker />
                     </Stack>
                   ) : item.answerType === 'Time Picker' ? (
                     <Stack mt={2}>
-                      <LocalizationProvider dateAdapter={ AdapterMoment } >
-                        <DesktopTimePicker
-                          label="For desktop"
-                          value={timeValue}
-                          onChange={(newValue) => {
-                            setTimeValue(newValue);
-                          }}
-                          renderInput={(params) => <TextField {...params} />}
-                        />
-                      </LocalizationProvider>
+                      <TimePickerCompo />
                     </Stack>
                   ) : item.answerType === 'Number Range Picker' ? (
-                    <Stack>
-                       <Slider
-                        aria-label="Custom marks"
-                        defaultValue={20}
-                        // getAriaValueText={getNumberRange}
-                        step={10}
-                        valueLabelDisplay="auto"
-                        marks={marks}
-                      />
+                    <Stack mt={2}>
+                      <NumberRangePicker values={item.numsArray}  />
+                    </Stack>
+                  ) :  item.answerType === 'Image Picker' ? (
+                    <Stack mt={2}>
+                      <ImagePickerCompo />
                     </Stack>
                   ) : null}
                 </Stack>
               ))}
             </FormControl>
-          ) : null}
-          <Button
+            <Button
               variant="contained"
               style={{ marginTop: 20 }}
               onClick={() => formSubmitHandler()}
             >
               Submit
             </Button>
+            </Container>
+          ) : null}
+          
         </Grid>
       </Grid>
     </Stack>
@@ -351,6 +426,4 @@ function FormBuilder() {
 }
 
 export default FormBuilder;
-function e(e: any, ansType: string): void {
-  throw new Error('Function not implemented.');
-}
+
