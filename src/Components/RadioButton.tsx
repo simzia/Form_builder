@@ -16,8 +16,8 @@ function RadioButton(props: any) {
           name="row-radio-buttons-group"
           defaultValue={props.item? props.item[0] : null}
         >
-          {props.item?.map((item: string) => (
-            <FormControlLabel value={item} control={<Radio />} label={item} />
+          {props.item?.map((item: any) => (
+            <FormControlLabel value={item} control={<Radio />} label={item.option} />
           ))}
           
         </RadioGroup>

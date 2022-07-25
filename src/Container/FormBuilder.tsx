@@ -19,11 +19,11 @@ import {
   Alert,
 } from '@mui/material';
 import Divider from '@mui/material/Divider';
-import { Question } from '../../types/interfaces';
+import { Question, OptionsArry } from '../../types/interfaces';
 import Dropdown from '../Components/Dropdown';
 import SingleLineTextfield from '../Components/SingleLineTextField';
 import MultiLineTextfield from '../Components/MultiLineTextfield';
-import CheckboxCompo from "../Components/Checkbox"
+import CheckboxCompo from '../Components/Checkbox';
 import RadioButton from '../Components/RadioButton';
 import DatePicker from '../Components/DatePicker';
 import TimePickerCompo from '../Components/TimePicker';
@@ -31,6 +31,7 @@ import NumberRangePicker from '../Components/NumberRangePicker';
 import ImagePickerCompo from '../Components/ImagePicker';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { options } from '../../types/interfaces';
 
 function FormBuilder() {
   const [que, setQue] = useState<string>('');
@@ -40,16 +41,17 @@ function FormBuilder() {
   const [option, setOption] = useState<string | undefined>();
   const [checkBoxOption, setCheckBoxOption] = useState<string | undefined>();
   const [optionArry, setOptionArry] = useState<[]>([]);
-  const [checkBoxOptionArry, setCheckBoxOptionArry] = useState<[]>([]);
+  const [checkBoxOptionArry, setCheckBoxOptionArry] = useState<options[]>([]);
   const [isOptionEnable, setIsOptionEnable] = useState<boolean>(false);
-  const [radioOptionArry, setRadioOptionArry] = useState<[]>([]);
+  const [radioOptionArry, setRadioOptionArry] = useState<options[]>([]);
   const [radioBtnOption, setRadioBtnOption] = useState<string | undefined>();
   const [isRangeEnable, setIsRangeEnable] = useState<boolean>(false);
-  const [minRange, setMinRange] = useState<string>("");
-  const [maxRange, setMaxRange] = useState<string>("")
-  const [isQueShowErr, setIsqueShowErr] = useState(false)
-  const [isAnsErr, setIsAnsErr] = useState(false)
-  const [isOptionAdd, setIsOptionAdd] = useState(false)
+  const [minRange, setMinRange] = useState<string>('');
+  const [maxRange, setMaxRange] = useState<string>('');
+  const [isQueShowErr, setIsqueShowErr] = useState(false);
+  const [isAnsErr, setIsAnsErr] = useState(false);
+  const [isOptionAdd, setIsOptionAdd] = useState(false);
+  const [newOptionArry, setNewOptionArry] = useState<options[]>([]);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     if (event.target.value == 'Dropdown') {
@@ -65,18 +67,62 @@ function FormBuilder() {
     }
     setAnsType(event.target.value);
   };
+
   const formSubmitHandler = () => {
-    console.log("form submit handler");
-  }
+    console.log('form submit handler');
+  };
+
   const addOptionToListHandler = () => {
-    console.log("addNewOptionHandler");
-    setIsOptionAdd(true)
-  }
+    console.log('addNewOptionHandler');
+    if (ansType == 'Dropdown') {
+      const arry = [...newOptionArry];
+      arry.push({ isOptionAdded: true, option: '' });
+      setNewOptionArry(arry);
+      setIsOptionAdd(true);
+    }
+    if (ansType == 'Checkbox') {
+      const arry = [...checkBoxOptionArry];
+      arry.push({ isOptionAdded: true, option: '' });
+      setCheckBoxOptionArry(arry);
+      setIsOptionAdd(true);
+    }
+    if (ansType == 'Radio Button') {
+      const arry = [...radioOptionArry];
+      arry.push({ isOptionAdded: true, option: '' });
+      setRadioOptionArry(arry);
+      setIsOptionAdd(true);
+    }
+  };
+
+  useEffect(() => {
+    console.log('ISOPTIONADD', isOptionAdd);
+  }, [isOptionAdd]);
+
+  const deleteOptionHandler = (index: number) => {
+    if (ansType == 'Dropdown') {
+      const arry = [...newOptionArry];
+      const remove = arry.splice(index, 1);
+      setNewOptionArry(arry);
+      console.log('DELETE', remove, arry);
+    }
+    if (ansType == 'Checkbox') {
+      const arry = [...checkBoxOptionArry];
+      const remove = arry.splice(index, 1);
+      setCheckBoxOptionArry(arry);
+      console.log('DELETE', remove, arry);
+    } else if (ansType == 'Radio Button') {
+      const arry = [...radioOptionArry];
+      const remove = arry.splice(index, 1);
+      setRadioOptionArry(arry);
+      console.log('DELETE', remove, arry);
+    }
+  };
+
   const submitHandler = () => {
     let arry: Question[] = [...formField];
-    let arryNew: [] = [];
+    let arryNew: options[] = [];
     if (ansType == 'Dropdown') {
-      arryNew = optionArry;
+      arryNew = newOptionArry;
     } else if (ansType == 'Checkbox') {
       arryNew = checkBoxOptionArry;
     } else if (ansType == 'Radio Button') {
@@ -84,18 +130,24 @@ function FormBuilder() {
     } else {
       arryNew = [];
     }
-    let numArry:string[] = []
-    if (ansType == "Number Range Picker") {
-      numArry = [minRange, maxRange]
+    let numArry: string[] = [];
+    if (ansType == 'Number Range Picker') {
+      numArry = [minRange, maxRange];
     }
-    if(que === "") {
-      setIsqueShowErr(true)
-    } if(ansType === "") {
-      setIsAnsErr(true)
+    if (que === '') {
+      setIsqueShowErr(true);
+    }
+    if (ansType === '') {
+      setIsAnsErr(true);
     } else {
-      setIsqueShowErr(false)
-      setIsAnsErr(false)
-      arry.push({ question: que, answerType: ansType, options: arryNew, numsArray: numArry });
+      setIsqueShowErr(false);
+      setIsAnsErr(false);
+      arry.push({
+        question: que,
+        answerType: ansType,
+        numsArray: numArry,
+        newOptionsArry: arryNew,
+      });
     }
     setQue('');
     setAnsType('');
@@ -105,17 +157,22 @@ function FormBuilder() {
     setOptionArry([]);
     setRadioOptionArry([]);
     setCheckBoxOptionArry([]);
-    setMaxRange("")
-    setMinRange("")
+    setMaxRange('');
+    setMinRange('');
+    setNewOptionArry([]);
   };
-  const handleMinRange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    console.log("MIN RANGE", e.target.value);
-    setMinRange(e.target.value)
-  }
-  const handleMaxRange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    console.log("MAX RANGE", e.target.value);
-    setMaxRange(e.target.value)
-  }
+  const handleMinRange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    console.log('MIN RANGE', e.target.value);
+    setMinRange(e.target.value);
+  };
+  const handleMaxRange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    console.log('MAX RANGE', e.target.value);
+    setMaxRange(e.target.value);
+  };
   const onChnageHandler = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -146,76 +203,74 @@ function FormBuilder() {
       setRadioOptionArry(arry);
     }
   };
-  const onOptionChange = (
+
+  const onOptionChnageHandler = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ansType: string
+    index: number
   ) => {
-    console.log('ANSWER TYPE', ansType);
+    console.log('val', e.target.value);
+
     if (ansType == 'Checkbox') {
-      setCheckBoxOption(e.target.value);
+      const arry: any = [...checkBoxOptionArry];
+      arry.forEach((item: any, i: number) => {
+        if (i == index) {
+          item.option = e.target.value;
+          console.log('ITEM', item.option);
+        }
+      });
+      setCheckBoxOptionArry(arry);
     } else if (ansType == 'Dropdown') {
-      setOption(e.target.value);
+      const arry = [...newOptionArry];
+      arry.forEach((item, i) => {
+        if (i == index) {
+          item.option = e.target.value;
+          console.log('ITEM', item.option);
+        }
+      });
+      setNewOptionArry(arry);
     } else if (ansType == 'Radio Button') {
-      setRadioBtnOption(e.target.value);
+      const arry: any = [...radioOptionArry];
+      arry.forEach((item: any, i: number) => {
+        if (i == index) {
+          item.option = e.target.value;
+          console.log('ITEM', item.option);
+        }
+      });
+      setRadioOptionArry(arry);
     }
   };
-  useEffect(() => {
-    console.log('QUESTION', ansType, isOptionEnable);
-  }, [ansType]);
-  
-  useEffect(() => {
-    console.log('ISQUESTION', isQueSubmit);
-  }, [isQueSubmit]);
-  const marks = [
-    {
-      value: 0,
-      label: '0',
-    },
-    {
-      value: 20,
-      label: '20',
-    },
-    {
-      value: 37,
-      label: '37',
-    },
-    {
-      value: 100,
-      label: '100',
-    },
-  ];
   return (
     <Stack>
       <Grid container spacing={5} columns={12} style={{ padding: 24 }}>
-        <Grid item xs={6} >
-          <Container >
+        <Grid item xs={6}>
+          <Container>
             <Typography variant="h4" component="h4">
               Generate Your Question Here
             </Typography>
             <Stack>
-              {isQueShowErr ? 
-              <TextField
-                error
-                id="standard-basic"
-                label="Error"
-                variant="standard"
-                margin="normal"
-                onChange={(e) => onChnageHandler(e)}
-                value={que}
-                helperText="Please Enter a Question"
-              /> : 
-              <TextField
-                id="standard-basic"
-                label="Question"
-                variant="standard"
-                margin="normal"
-                onChange={(e) => onChnageHandler(e)}
-                value={que}
-              />
-              }
-              
+              {isQueShowErr ? (
+                <TextField
+                  error
+                  id="standard-basic"
+                  label="Error"
+                  variant="standard"
+                  margin="normal"
+                  onChange={(e) => onChnageHandler(e)}
+                  value={que}
+                  helperText="Please Enter a Question"
+                />
+              ) : (
+                <TextField
+                  id="standard-basic"
+                  label="Question"
+                  variant="standard"
+                  margin="normal"
+                  onChange={(e) => onChnageHandler(e)}
+                  value={que}
+                />
+              )}
             </Stack>
-            
+
             <Stack style={{ marginTop: 28 }}>
               <Typography variant="h4" component="h4">
                 Select the Answer Type
@@ -228,7 +283,6 @@ function FormBuilder() {
                 id="demo-simple-select"
                 value={ansType}
                 label="Question Type"
-                // helperText="Please Enter a Question"
                 onChange={(e) => handleChange(e)}
               >
                 <MenuItem value={'Single Line Textfield'}>
@@ -242,92 +296,153 @@ function FormBuilder() {
                 <MenuItem value={'Radio Button'}>Radio Button</MenuItem>
                 <MenuItem value={'Date Picker'}>Date Picker</MenuItem>
                 <MenuItem value={'Time Picker'}>Time Picker</MenuItem>
-                <MenuItem value={'Number Range Picker'}>Number Range Picker</MenuItem>
+                <MenuItem value={'Number Range Picker'}>
+                  Number Range Picker
+                </MenuItem>
                 <MenuItem value={'Image Picker'}>Image Picker</MenuItem>
               </Select>
             </FormControl>
-            {isAnsErr ? <Alert severity="error">Please Select the Answer Type!</Alert> : null}
+            {isAnsErr ? (
+              <Alert severity="error">Please Select the Answer Type!</Alert>
+            ) : null}
             {ansType && isOptionEnable ? (
-              <Container style={{marginTop: "10px"}}>
+              <Container style={{ marginTop: '10px' }}>
                 <Typography variant="h6" component="h6">
                   Add Option
                 </Typography>
-                {isOptionAdd ? (
-                  <Grid container spacing={2} columns={12} alignItems="center">
-                    <Grid item xs={10}>
-                      <Stack>
-                        <TextField
-                          id="standard-basic"
-                          label="Option"
-                          variant="outlined"
-                          margin="normal"
-                          onChange={(e) => onChnageHandler(e)}
-                          value={option}
-                        />
-                      </Stack>
-                    </Grid>
-                    <Grid item xs={2}>
-                      <Stack direction="row" alignItems="center" justifyContent="center" style={{display: "flex"}}>
-                        <DeleteForeverIcon />
-                      </Stack>
-                    </Grid>
-                  </Grid>
-                  // <Stack direction="row" alignItems="center">
-                  //   <TextField
-                  //   id="standard-basic"
-                  //   label="Question"
-                  //   variant="outlined"
-                  //   margin="normal"
-                  //   onChange={(e) => onChnageHandler(e)}
-                  //   value={que}
-                  // />
-                  // <DeleteForeverIcon />
-                  // </Stack>
-                ) : null}
+                {ansType == 'Dropdown' && isOptionEnable
+                  ? newOptionArry?.map((item, index) =>
+                      item.isOptionAdded ? (
+                        <Grid
+                          container
+                          spacing={2}
+                          columns={12}
+                          alignItems="center"
+                        >
+                          <Grid item xs={10}>
+                            <Stack>
+                              <TextField
+                                id="standard-basic"
+                                label="Option"
+                                variant="outlined"
+                                margin="normal"
+                                onChange={(e) =>
+                                  onOptionChnageHandler(e, index)
+                                }
+                                value={item.option}
+                              />
+                            </Stack>
+                          </Grid>
+                          <Grid item xs={2}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="center"
+                              style={{ display: 'flex' }}
+                            >
+                              <DeleteForeverIcon
+                                onClick={() => deleteOptionHandler(index)}
+                              />
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      ) : null
+                    )
+                  : ansType == 'Checkbox'
+                  ? checkBoxOptionArry?.map((item, index) =>
+                      item.isOptionAdded ? (
+                        <Grid
+                          container
+                          spacing={2}
+                          columns={12}
+                          alignItems="center"
+                        >
+                          <Grid item xs={10}>
+                            <Stack>
+                              <TextField
+                                id="standard-basic"
+                                label="Option"
+                                variant="outlined"
+                                margin="normal"
+                                onChange={(e) =>
+                                  onOptionChnageHandler(e, index)
+                                }
+                                value={item.option}
+                              />
+                            </Stack>
+                          </Grid>
+                          <Grid item xs={2}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="center"
+                              style={{ display: 'flex' }}
+                            >
+                              <DeleteForeverIcon
+                                onClick={() => deleteOptionHandler(index)}
+                              />
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      ) : null
+                    )
+                  : ansType == 'Radio Button'
+                  ? radioOptionArry?.map((item, index) =>
+                      item.isOptionAdded ? (
+                        <Grid
+                          container
+                          spacing={2}
+                          columns={12}
+                          alignItems="center"
+                        >
+                          <Grid item xs={10}>
+                            <Stack>
+                              <TextField
+                                id="standard-basic"
+                                label="Option"
+                                variant="outlined"
+                                margin="normal"
+                                onChange={(e) =>
+                                  onOptionChnageHandler(e, index)
+                                }
+                                value={item.option}
+                              />
+                            </Stack>
+                          </Grid>
+                          <Grid item xs={2}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="center"
+                              style={{ display: 'flex' }}
+                            >
+                              <DeleteForeverIcon
+                                onClick={() => deleteOptionHandler(index)}
+                              />
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      ) : null
+                    )
+                  : null}
+
                 <Stack direction="row" justifyContent="center">
-                  <AddCircleIcon color='primary' onClick={() => addOptionToListHandler()}/>
+                  <AddCircleIcon
+                    color="primary"
+                    onClick={() => addOptionToListHandler()}
+                  />
                 </Stack>
-                {/* <Grid container spacing={2} columns={12}>
-                  <Grid item xs={8}>
-                    <Stack>
-                      <TextField
-                        id="standard-basic"
-                        label="Enter Option"
-                        onChange={(e) => onOptionChange(e, ansType)}
-                        variant="outlined"
-                        margin="normal"
-                      />
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={4}>
-                    <Button
-                      variant="contained"
-                      style={{ marginTop: 20 }}
-                      onClick={(e) => addNewOptionHandler(e, ansType)}
-                    >
-                      Add Option
-                    </Button>
-                  </Grid>
-                </Grid>
-                <Grid container spacing={2} columns={12}>
-                  {ansType == 'Dropdown'
-                    ? optionArry.map((item) => <Grid item xs={2}><Typography style={{backgroundColor: "#ededed", textAlign: "center", borderRadius: "7px", padding: "3px"}}>{item}</Typography></Grid>)
-                    : ansType == 'Checkbox'
-                    ? checkBoxOptionArry.map((item) => (
-                        <Grid item xs={2}><Typography style={{backgroundColor: "#ededed", textAlign: "center", borderRadius: "7px", padding: "3px"}}>{item}</Typography></Grid>
-                      ))
-                    : ansType == 'Radio Button'
-                    ? radioOptionArry.map((item) => (
-                        <Grid item xs={2}><Typography style={{backgroundColor: "#ededed", textAlign: "center", borderRadius: "7px", padding: "3px"}}>{item}</Typography></Grid>
-                      ))
-                    : null}
-                </Grid> */}
               </Container>
             ) : null}
-            {ansType == "Number Range Picker" && isRangeEnable ? (
+            {ansType == 'Number Range Picker' && isRangeEnable ? (
               <Grid container spacing={2} columns={12} mt={2}>
                 <Grid item xs={6}>
-                  <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
                     <Typography>Min Range</Typography>
                     <TextField
                       id="filled-basic"
@@ -340,21 +455,26 @@ function FormBuilder() {
                   </Stack>
                 </Grid>
                 <Grid item xs={6}>
-                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                 <Typography>Max Range</Typography>
-                 <TextField
-                    id="filled-basic"
-                    label="Max Range"
-                    variant="filled"
-                    margin="normal"
-                    value={maxRange}
-                    onChange={(e) => handleMaxRange(e)}
-                  />
-                </Stack>
+                  <Stack
+                    direction="row"
+                    spacing={2}
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Typography>Max Range</Typography>
+                    <TextField
+                      id="filled-basic"
+                      label="Max Range"
+                      variant="filled"
+                      margin="normal"
+                      value={maxRange}
+                      onChange={(e) => handleMaxRange(e)}
+                    />
+                  </Stack>
                 </Grid>
               </Grid>
             ) : null}
-         
+
             <Button
               variant="contained"
               style={{ marginTop: 30 }}
@@ -364,61 +484,64 @@ function FormBuilder() {
             </Button>
           </Container>
         </Grid>
-        <Divider orientation="vertical" flexItem/>
-        <Grid
-          item
-          xs={5}
-          style={{paddingBottom: 20 }}
-        >
+        <Divider orientation="vertical" flexItem />
+        <Grid item xs={5} style={{ paddingBottom: 20 }}>
           <Typography variant="h4" component="h4">
             Form Preview
           </Typography>
           {isQueSubmit && formField ? (
             <Container>
-            <FormControl style={{ marginTop: 20 }} fullWidth>
-              {formField?.map((item) => (
-                <Stack mt={2}>
-                  <Typography style={{color: "#222", fontWeight: "900", fontSize: "18px"}}>{item.question}</Typography>
-                  {item.answerType === 'Single Line Textfield' ? (
-                    <SingleLineTextfield />
-                  ) : item.answerType === 'Multiple Line Textfield' ? (
-                    <MultiLineTextfield />
-                  ) : item.answerType === 'Dropdown' ? (
-                      <Dropdown item={item.options}/>
-                  ) : item.answerType === 'Checkbox' ? (
-                    <CheckboxCompo item={item.options}/>
-                  ) : item.answerType === 'Radio Button' ? (
-                     <RadioButton item={item.options} />
-                  ) : item.answerType === 'Date Picker' ? (
-                    <Stack mt={2}>
-                      <DatePicker />
-                    </Stack>
-                  ) : item.answerType === 'Time Picker' ? (
-                    <Stack mt={2}>
-                      <TimePickerCompo />
-                    </Stack>
-                  ) : item.answerType === 'Number Range Picker' ? (
-                    <Stack mt={2}>
-                      <NumberRangePicker values={item.numsArray}  />
-                    </Stack>
-                  ) :  item.answerType === 'Image Picker' ? (
-                    <Stack mt={2}>
-                      <ImagePickerCompo />
-                    </Stack>
-                  ) : null}
-                </Stack>
-              ))}
-            </FormControl>
-            <Button
-              variant="contained"
-              style={{ marginTop: 20 }}
-              onClick={() => formSubmitHandler()}
-            >
-              Submit
-            </Button>
+              <FormControl style={{ marginTop: 20 }} fullWidth>
+                {formField?.map((item) => (
+                  <Stack mt={2}>
+                    <Typography
+                      style={{
+                        color: '#222',
+                        fontWeight: '900',
+                        fontSize: '18px',
+                      }}
+                    >
+                      {item.question}
+                    </Typography>
+                    {item.answerType === 'Single Line Textfield' ? (
+                      <SingleLineTextfield />
+                    ) : item.answerType === 'Multiple Line Textfield' ? (
+                      <MultiLineTextfield />
+                    ) : item.answerType === 'Dropdown' ? (
+                      <Dropdown item={item.newOptionsArry} />
+                    ) : item.answerType === 'Checkbox' ? (
+                      <CheckboxCompo item={item.newOptionsArry} />
+                    ) : item.answerType === 'Radio Button' ? (
+                      <RadioButton item={item.newOptionsArry} />
+                    ) : item.answerType === 'Date Picker' ? (
+                      <Stack mt={2}>
+                        <DatePicker />
+                      </Stack>
+                    ) : item.answerType === 'Time Picker' ? (
+                      <Stack mt={2}>
+                        <TimePickerCompo />
+                      </Stack>
+                    ) : item.answerType === 'Number Range Picker' ? (
+                      <Stack mt={2}>
+                        <NumberRangePicker values={item.numsArray} />
+                      </Stack>
+                    ) : item.answerType === 'Image Picker' ? (
+                      <Stack mt={2}>
+                        <ImagePickerCompo />
+                      </Stack>
+                    ) : null}
+                  </Stack>
+                ))}
+              </FormControl>
+              <Button
+                variant="contained"
+                style={{ marginTop: 20 }}
+                onClick={() => formSubmitHandler()}
+              >
+                Submit
+              </Button>
             </Container>
           ) : null}
-          
         </Grid>
       </Grid>
     </Stack>
@@ -426,4 +549,3 @@ function FormBuilder() {
 }
 
 export default FormBuilder;
-

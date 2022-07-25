@@ -27,8 +27,8 @@ function Dropdown(props: any) {
           label="Select Options"
           onChange={(e) => handleDropdown(e)}
         >
-          {props.item?.map((item: string) => (
-            <MenuItem value={item}>{item}</MenuItem>
+          {props.item?.map((item: any) => (
+            <MenuItem value={item.option}>{item.option}</MenuItem>
           ))}
         </Select>
       </FormControl>
